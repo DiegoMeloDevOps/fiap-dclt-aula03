@@ -6,6 +6,32 @@
 
 ---
 
+## 📋 Pré-requisitos
+
+**⚠️ Cluster EKS Necessário**
+
+Este vídeo assume que você já tem um cluster EKS configurado:
+
+- ✅ **Cluster criado** na Aula 01 ou Vídeo 3.2
+- ✅ **kubectl configurado** e conectado ao cluster
+- ✅ **Aplicação deployada** com Kustomize (Vídeo 3.2)
+
+**Se não tiver cluster:**
+1. 📚 Consulte a **Aula 01** para criar o cluster
+2. 📂 Repositório: [fiap-dclt-aula01](https://github.com/josenetoo/fiap-dclt-aula01)
+3. Ou siga o **Vídeo 3.2** (Parte 2: Criar Cluster EKS)
+
+**Verificar cluster:**
+```bash
+# Ver clusters disponíveis
+aws eks list-clusters --region us-east-1
+
+# Testar conexão
+kubectl get nodes
+```
+
+---
+
 ## 📚 Parte 1: Estratégias de Deploy
 
 ### Passo 1: Comparação de Estratégias

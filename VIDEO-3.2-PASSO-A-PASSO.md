@@ -29,6 +29,31 @@ graph TB
 
 ## ☘️ Parte 2: Criar Cluster EKS
 
+**⚠️ Importante: Reutilizar Cluster da Aula 01**
+
+Se você já criou o cluster EKS na **Aula 01**, pode reutilizá-lo! Não precisa criar um novo.
+
+**Opções:**
+
+1. **Cluster já existe e está ativo:**
+   - ✅ Pule para o **Passo 8** (Configurar kubectl)
+   - Use o mesmo cluster: `cicd-lab`
+
+2. **Cluster foi deletado:**
+   - 📚 Consulte os comandos da **Aula 01**
+   - 📂 Repositório: [fiap-dclt-aula01](https://github.com/josenetoo/fiap-dclt-aula01)
+   - Recrie o cluster usando os mesmos comandos
+
+3. **Primeira vez criando cluster:**
+   - ✅ Continue com os passos abaixo
+
+**Verificar se cluster existe:**
+```bash
+aws eks list-clusters --region us-east-1
+```
+
+---
+
 ### Passo 2: Arquitetura EKS
 
 ```mermaid
@@ -707,14 +732,34 @@ jobs:
       
       - name: 🧪 Smoke test
         run: |
-          # Aguardar service estar pronto
+          echo "⏳ Aguardando LoadBalancer estar pronto..."
+          
+          # Aguardar até 5 minutos para LoadBalancer ter hostname
+          for i in {1..30}; do
+            LB_URL=$(kubectl get service prod-fiap-todo-api-service \
+              -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            
+            if [ -n "$LB_URL" ]; then
+              echo "✅ LoadBalancer pronto: $LB_URL"
+              break
+            fi
+            
+            echo "⏳ Tentativa $i/30 - Aguardando LoadBalancer..."
+            sleep 10
+          done
+          
+          # Verificar se obteve URL
+          if [ -z "$LB_URL" ]; then
+            echo "❌ LoadBalancer não ficou pronto após 5 minutos"
+            exit 1
+          fi
+          
+          # Aguardar LoadBalancer estar acessível
+          echo "⏳ Aguardando LoadBalancer estar acessível..."
           sleep 30
           
-          # Obter LoadBalancer URL
-          LB_URL=$(kubectl get service prod-fiap-todo-api-service \
-            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-          
-          echo "Testing: http://$LB_URL/health"
+          # Testar health endpoint
+          echo "🧪 Testando: http://$LB_URL/health"
           curl -f http://$LB_URL/health || exit 1
           
           echo "✅ Smoke test passed!"
@@ -796,14 +841,34 @@ jobs:
       
       - name: 🧪 Smoke test
         run: |
-          # Aguardar service estar pronto
+          echo "⏳ Aguardando LoadBalancer estar pronto..."
+          
+          # Aguardar até 5 minutos para LoadBalancer ter hostname
+          for i in {1..30}; do
+            LB_URL=`$(kubectl get service prod-fiap-todo-api-service \
+              -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            
+            if [ -n "`$LB_URL" ]; then
+              echo "✅ LoadBalancer pronto: `$LB_URL"
+              break
+            fi
+            
+            echo "⏳ Tentativa `$i/30 - Aguardando LoadBalancer..."
+            sleep 10
+          done
+          
+          # Verificar se obteve URL
+          if [ -z "`$LB_URL" ]; then
+            echo "❌ LoadBalancer não ficou pronto após 5 minutos"
+            exit 1
+          fi
+          
+          # Aguardar LoadBalancer estar acessível
+          echo "⏳ Aguardando LoadBalancer estar acessível..."
           sleep 30
           
-          # Obter LoadBalancer URL
-          LB_URL=`$(kubectl get service prod-fiap-todo-api-service \
-            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-          
-          echo "Testing: http://`$LB_URL/health"
+          # Testar health endpoint
+          echo "🧪 Testando: http://`$LB_URL/health"
           curl -f http://`$LB_URL/health || exit 1
           
           echo "✅ Smoke test passed!"

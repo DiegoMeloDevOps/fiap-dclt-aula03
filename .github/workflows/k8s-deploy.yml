@@ -57,14 +57,34 @@ jobs:
       
       - name: 🧪 Smoke test
         run: |
-          # Aguardar service estar pronto
+          echo "⏳ Aguardando LoadBalancer estar pronto..."
+          
+          # Aguardar até 5 minutos para LoadBalancer ter hostname
+          for i in {1..30}; do
+            LB_URL=$(kubectl get service prod-fiap-todo-api-service \
+              -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            
+            if [ -n "$LB_URL" ]; then
+              echo "✅ LoadBalancer pronto: $LB_URL"
+              break
+            fi
+            
+            echo "⏳ Tentativa $i/30 - Aguardando LoadBalancer..."
+            sleep 10
+          done
+          
+          # Verificar se obteve URL
+          if [ -z "$LB_URL" ]; then
+            echo "❌ LoadBalancer não ficou pronto após 5 minutos"
+            exit 1
+          fi
+          
+          # Aguardar LoadBalancer estar acessível
+          echo "⏳ Aguardando LoadBalancer estar acessível..."
           sleep 30
           
-          # Obter LoadBalancer URL
-          LB_URL=$(kubectl get service prod-fiap-todo-api-service \
-            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-          
-          echo "Testing: http://$LB_URL/health"
+          # Testar health endpoint
+          echo "🧪 Testando: http://$LB_URL/health"
           curl -f http://$LB_URL/health || exit 1
           
           echo "✅ Smoke test passed!"
