@@ -242,6 +242,14 @@ graph TB
 
 **Os arquivos já estão criados no repositório em `k8s/blue-green/`**
 
+**💡 Nota sobre Tags de Imagem:**
+- Usamos `latest` para ambos (blue e green)
+- A diferenciação é feita pela **variável de ambiente `VERSION`**
+- Blue: `VERSION=v1.0-blue`
+- Green: `VERSION=v2.0-green`
+- Isso simula versões diferentes sem precisar criar tags no ECR
+- Em produção real, você usaria tags específicas (`v1.0`, `v2.0`, etc.)
+
 Vamos entender o que cada um faz:
 
 **Deployment Blue (`deployment-blue.yaml`):**
@@ -267,12 +275,12 @@ spec:
     spec:
       containers:
       - name: api
-        image: YOUR_ECR_URI/fiap-todo-api:v1.0
+        image: YOUR_ECR_URI/fiap-todo-api:latest
         ports:
         - containerPort: 3000
         env:
         - name: VERSION
-          value: "blue"
+          value: "v1.0-blue"
         resources:
           requests:
             memory: "128Mi"
@@ -397,6 +405,14 @@ graph TB
 
 **Os arquivos já estão criados em `k8s/canary-istio/`**
 
+**💡 Nota sobre Tags de Imagem:**
+- Usamos `latest` para ambos (stable e canary)
+- A diferenciação é feita pela **variável de ambiente `VERSION`**
+- Stable: `VERSION=v1.0`
+- Canary: `VERSION=v2.0`
+- Isso permite testar sem criar múltiplas tags no ECR
+- Em produção, você usaria tags específicas para cada versão
+
 Vamos entender cada um:
 
 **Deployment Stable (`deployment-stable.yaml`):**
@@ -419,7 +435,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: YOUR_ECR_URI/fiap-todo-api:v1.0
+        image: YOUR_ECR_URI/fiap-todo-api:latest
         ports:
         - containerPort: 3000
         env:
@@ -447,7 +463,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: YOUR_ECR_URI/fiap-todo-api:v2.0
+        image: YOUR_ECR_URI/fiap-todo-api:latest
         ports:
         - containerPort: 3000
         env:

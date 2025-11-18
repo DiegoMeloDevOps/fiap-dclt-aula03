@@ -19,12 +19,12 @@ spec:
     spec:
       containers:
       - name: api
-        image: YOUR_ECR_URI/fiap-todo-api:v1.0
+        image: YOUR_ECR_URI/fiap-todo-api:latest
         ports:
         - containerPort: 3000
         env:
         - name: VERSION
-          value: "blue"
+          value: "v1.0-blue"
         resources:
           requests:
             memory: "128Mi"
