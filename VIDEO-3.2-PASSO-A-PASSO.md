@@ -840,9 +840,40 @@ jobs:
 
 ---
 
+### Passo 23: Commit do Workflow
+
+**Agora vamos adicionar o workflow ao repositório:**
+
+**Linux/Mac/Windows (mesmo comando):**
+```bash
+# Verificar arquivo criado
+ls -la .github/workflows/k8s-deploy.yml
+
+# Adicionar ao git
+git add .github/workflows/k8s-deploy.yml
+
+# Commit
+git commit -m "feat: adicionar workflow de deploy kubernetes"
+
+# Push para GitHub
+git push origin main
+```
+
+**O que acontece:**
+1. ✅ Workflow é enviado para GitHub
+2. ✅ GitHub Actions detecta o novo workflow
+3. ✅ Workflow fica disponível em: `Actions` → `Deploy to Kubernetes`
+4. ✅ Pode ser executado manualmente ou automaticamente
+
+**Verificar no GitHub:**
+- Vá para: `Actions` → Você verá o workflow `☸️ Deploy to Kubernetes`
+- Status: Aguardando trigger (não executa ainda)
+
+---
+
 ## 🧪 Parte 7: Testar Deploy
 
-### Passo 23: Trigger Deploy
+### Passo 25: Trigger Deploy
 
 ```bash
 # Fazer mudança na aplicação
@@ -858,7 +889,7 @@ git push origin main
 # 2. Deploy to Kubernetes (inicia automaticamente)
 ```
 
-### Passo 24: Verificar Deploy
+### Passo 26: Verificar Deploy
 
 ```bash
 # Ver pods
@@ -888,7 +919,7 @@ curl -X POST http://$LB_URL/api/todos \
 
 ## 🎓 Parte 8: Conceitos Aprendidos
 
-### Passo 25: Fluxo Completo
+### Passo 27: Fluxo Completo
 
 ```mermaid
 graph LR
