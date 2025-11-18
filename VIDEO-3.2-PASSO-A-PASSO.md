@@ -598,8 +598,12 @@ graph LR
 
 ### Passo 21: Criar Workflow de Deploy (Faremos juntos na aula)
 
-**Workflow que criaremos:**
-```yaml
+**Vamos criar o workflow durante a aula:**
+
+**Linux/Mac:**
+```bash
+# Criar arquivo do workflow
+cat > .github/workflows/k8s-deploy.yml << 'EOF'
 name: ☸️ Deploy to Kubernetes
 
 on:
@@ -683,7 +687,112 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           kubectl get pods -l app=fiap-todo-api >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+EOF
 ```
+
+**Windows (PowerShell):**
+```powershell
+# Criar arquivo do workflow
+@"
+name: ☸️ Deploy to Kubernetes
+
+on:
+  workflow_run:
+    workflows: ["🐳 Docker Build and Push"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  CLUSTER_NAME: cicd-lab
+
+jobs:
+  deploy:
+    name: 🚀 Deploy to EKS
+    runs-on: ubuntu-latest
+    if: `${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    permissions:
+      id-token: write
+      contents: read
+    
+    steps:
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+      
+      - name: 🔑 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: `${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: `${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: `${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: `${{ env.AWS_REGION }}
+      
+      - name: ☘️ Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name `${{ env.CLUSTER_NAME }} \
+            --region `${{ env.AWS_REGION }} \
+            --profile fiapaws
+      
+      - name: 🔧 Setup Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+      
+      - name: 📝 Update image tag
+        working-directory: k8s/overlays/production
+        run: |
+          kustomize edit set image \
+            `${{ secrets.ECR_URI }}/fiap-todo-api:`${{ github.sha }}
+      
+      - name: 🚀 Deploy to Kubernetes
+        run: |
+          kubectl apply -k k8s/overlays/production
+          kubectl rollout status deployment/prod-fiap-todo-api
+      
+      - name: 🧪 Smoke test
+        run: |
+          # Aguardar service estar pronto
+          sleep 30
+          
+          # Obter LoadBalancer URL
+          LB_URL=`$(kubectl get service prod-fiap-todo-api \
+            -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          
+          echo "Testing: http://`$LB_URL/health"
+          curl -f http://`$LB_URL/health || exit 1
+          
+          echo "✅ Smoke test passed!"
+      
+      - name: 📊 Deployment summary
+        run: |
+          echo "## ☸️ Kubernetes Deployment" >> `$GITHUB_STEP_SUMMARY
+          echo "" >> `$GITHUB_STEP_SUMMARY
+          echo "**Cluster**: `${{ env.CLUSTER_NAME }}" >> `$GITHUB_STEP_SUMMARY
+          echo "**Image**: \``${{ github.sha }}\`" >> `$GITHUB_STEP_SUMMARY
+          echo "" >> `$GITHUB_STEP_SUMMARY
+          echo "### Pods:" >> `$GITHUB_STEP_SUMMARY
+          echo '\`\`\`' >> `$GITHUB_STEP_SUMMARY
+          kubectl get pods -l app=fiap-todo-api >> `$GITHUB_STEP_SUMMARY
+          echo '\`\`\`' >> `$GITHUB_STEP_SUMMARY
+"@ | Out-File -FilePath .github/workflows/k8s-deploy.yml -Encoding UTF8
+```
+
+**Explicação do workflow:**
+- ✅ **Trigger**: Executa após Docker Build ou manualmente
+- ✅ **AWS Auth**: Usa Access Keys do Learner Lab
+- ✅ **Kubeconfig**: Atualiza configuração do EKS
+- ✅ **Kustomize**: Atualiza tag da imagem dinamicamente
+- ✅ **Deploy**: Aplica manifests com kubectl
+- ✅ **Smoke Test**: Testa endpoint /health
+- ✅ **Summary**: Mostra status no GitHub Actions
+
+**⚠️ Notas importantes:**
+- No Windows, use `` ` `` (backtick) para escapar `$` nas variáveis do GitHub Actions
+- O workflow roda em `ubuntu-latest` (mesmo criando no Windows)
+- Kustomize atualiza a tag da imagem antes do deploy
 
 ---
 
