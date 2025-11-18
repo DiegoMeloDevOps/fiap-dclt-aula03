@@ -510,6 +510,9 @@ ingress:
           pathType: ImplementationSpecific
   tls: []
 
+httpRoute:
+  enabled: false
+
 resources:
   limits:
     cpu: 200m
