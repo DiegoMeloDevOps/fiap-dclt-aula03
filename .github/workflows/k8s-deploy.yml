@@ -61,7 +61,7 @@ jobs:
           sleep 30
           
           # Obter LoadBalancer URL
-          LB_URL=$(kubectl get service prod-fiap-todo-api \
+          LB_URL=$(kubectl get service prod-fiap-todo-api-service \
             -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           
           echo "Testing: http://$LB_URL/health"

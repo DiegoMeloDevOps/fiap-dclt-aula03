@@ -711,7 +711,7 @@ jobs:
           sleep 30
           
           # Obter LoadBalancer URL
-          LB_URL=$(kubectl get service prod-fiap-todo-api \
+          LB_URL=$(kubectl get service prod-fiap-todo-api-service \
             -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           
           echo "Testing: http://$LB_URL/health"
@@ -800,7 +800,7 @@ jobs:
           sleep 30
           
           # Obter LoadBalancer URL
-          LB_URL=`$(kubectl get service prod-fiap-todo-api \
+          LB_URL=`$(kubectl get service prod-fiap-todo-api-service \
             -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           
           echo "Testing: http://`$LB_URL/health"
@@ -894,10 +894,10 @@ git push origin main
 kubectl get pods -l app=fiap-todo-api
 
 # Ver service
-kubectl get service prod-fiap-todo-api
+kubectl get service prod-fiap-todo-api-service
 
 # Obter URL do LoadBalancer
-LB_URL=$(kubectl get service prod-fiap-todo-api \
+LB_URL=$(kubectl get service prod-fiap-todo-api-service \
   -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 
 echo "API URL: http://$LB_URL"
