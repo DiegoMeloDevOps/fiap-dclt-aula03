@@ -5,7 +5,7 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 
-// Trust proxy (necessário para funcionar atrás de load balancers/Istio)
+// Trust proxy (necessário para funcionar atrás de load balancers/Istio))
 app.set('trust proxy', 1);
 
 // Middleware de segurança
